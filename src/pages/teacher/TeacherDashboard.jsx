@@ -31,44 +31,40 @@ export const TeacherDashboard = () => {
 
   const handleSaveItem = (e) => {
     e.preventDefault();
-    if (editingItem) {
-      if ('schedule' in editingItem) {
-        setCourses(courses.map(course => course.id === editingItem.id ? editingItem : course));
-      } else if ('dueDate' in editingItem) {
-        setAssignments(assignments.map(assignment => assignment.id === editingItem.id ? editingItem : assignment));
-      } else if ('date' in editingItem) {
-        setExams(exams.map(exam => exam.id === editingItem.id ? editingItem : exam));
-      }
+    if (editingItem && editingItem.id) {
+        // Lógica de edición
     } else {
-      if (activeTab === 'courses') {
-        const newCourse = {
-          id: courses.length + 1,
-          name: e.currentTarget.name.value,
-          schedule: e.currentTarget.schedule.value,
-          students: parseInt(e.currentTarget.students.value, 10),
-          materials: []
-        };
-        setCourses([...courses, newCourse]);
-      } else if (activeTab === 'assignments') {
-        const newAssignment = {
-          id: assignments.length + 1,
-          title: e.currentTarget.title.value,
-          course: e.currentTarget.course.value,
-          dueDate: e.currentTarget.dueDate.value,
-        };
-        setAssignments([...assignments, newAssignment]);
-      } else if (activeTab === 'exams') {
-        const newExam = {
-          id: exams.length + 1,
-          title: e.currentTarget.title.value,
-          course: e.currentTarget.course.value,
-          date: e.currentTarget.date.value,
-        };
-        setExams([...exams, newExam]);
-      }
+        if (activeTab === 'courses') {
+            const newCourse = {
+                id: courses.length + 1,
+                name: e.target.name.value,
+                schedule: e.target.schedule.value,
+                students: parseInt(e.target.students.value, 10),
+                materials: [],
+            };
+            setCourses([...courses, newCourse]);
+        } else if (activeTab === 'assignments') {
+            const newAssignment = {
+                id: assignments.length + 1,
+                title: e.target.title.value,
+                course: e.target.course.value,
+                dueDate: e.target.dueDate.value,
+            };
+            setAssignments([...assignments, newAssignment]);
+        } else if (activeTab === 'exams') {
+            const newExam = {
+                id: exams.length + 1,
+                title: e.target.title.value,
+                course: e.target.course.value,
+                date: e.target.date.value,
+            };
+            setExams([...exams, newExam]);
+        }
     }
     setEditingItem(null);
-  };
+    e.target.reset();
+};
+
 
   const handleAddMaterial = (courseId) => {
     const updatedCourses = courses.map(course => {
@@ -118,31 +114,19 @@ export const TeacherDashboard = () => {
             <nav className="-mb-px flex">
               <button
                 onClick={() => setActiveTab('courses')}
-                className={`mr-8 py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'courses'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
+                className={`mr-8 py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'courses' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
               >
                 Cursos
               </button>
               <button
                 onClick={() => setActiveTab('assignments')}
-                className={`mr-8 py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'assignments'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
+                className={`mr-8 py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'assignments' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
               >
                 Tareas
               </button>
               <button
                 onClick={() => setActiveTab('exams')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'exams'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'exams' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
               >
                 Exámenes
               </button>
@@ -168,16 +152,40 @@ export const TeacherDashboard = () => {
                 {activeTab === 'courses' && courses.map(course => (
                   <li key={course.id} className="py-4 flex items-center justify-between">
                     <div>
-                      <p className="text-lg font-medium text-gray-900">{course.name}</p>
+                      <p className="text-sm font-medium text-gray-900">{course.name}</p>
                       <p className="text-sm text-gray-500">{course.schedule}</p>
                       <p className="text-sm text-gray-500">{course.students} estudiantes</p>
-                    </div>
-                    <div className="flex space-x-4">
-                      <button onClick={() => handleEditItem(course)} className="text-blue-600 hover:text-blue-800">
-                        <Edit className="h-5 w-5" />
+                      <ul>
+                        {course.materials.map((material, index) => (
+                          <li key={index} className="text-sm text-gray-500">- {material}</li>
+                        ))}
+                      </ul>
+                      <input
+                        type="text"
+                        value={newMaterial}
+                        onChange={(e) => setNewMaterial(e.target.value)}
+                        placeholder="Nuevo material"
+                        className="mt-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      />
+                      <button
+                        onClick={() => handleAddMaterial(course.id)}
+                        className="ml-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        Añadir
                       </button>
-                      <button onClick={() => handleDeleteItem(course.id, 'course')} className="text-red-600 hover:text-red-800">
-                        <Trash2 className="h-5 w-5" />
+                    </div>
+                    <div className="ml-4 flex-shrink-0">
+                      <button
+                        onClick={() => handleEditItem(course)}
+                        className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 mr-2"
+                      >
+                        <Edit className="inline-block h-5 w-5" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteItem(course.id, 'course')}
+                        className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                      >
+                        <Trash2 className="inline-block h-5 w-5" />
                       </button>
                     </div>
                   </li>
@@ -185,15 +193,22 @@ export const TeacherDashboard = () => {
                 {activeTab === 'assignments' && assignments.map(assignment => (
                   <li key={assignment.id} className="py-4 flex items-center justify-between">
                     <div>
-                      <p className="text-lg font-medium text-gray-900">{assignment.title}</p>
-                      <p className="text-sm text-gray-500">Debido: {assignment.dueDate}</p>
+                      <p className="text-sm font-medium text-gray-900">{assignment.title}</p>
+                      <p className="text-sm text-gray-500">{assignment.course}</p>
+                      <p className="text-sm text-gray-500">Fecha de entrega: {assignment.dueDate}</p>
                     </div>
-                    <div className="flex space-x-4">
-                      <button onClick={() => handleEditItem(assignment)} className="text-blue-600 hover:text-blue-800">
-                        <Edit className="h-5 w-5" />
+                    <div className="ml-4 flex-shrink-0">
+                      <button
+                        onClick={() => handleEditItem(assignment)}
+                        className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 mr-2"
+                      >
+                        <Edit className="inline-block h-5 w-5" />
                       </button>
-                      <button onClick={() => handleDeleteItem(assignment.id, 'assignment')} className="text-red-600 hover:text-red-800">
-                        <Trash2 className="h-5 w-5" />
+                      <button
+                        onClick={() => handleDeleteItem(assignment.id, 'assignment')}
+                        className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                      >
+                        <Trash2 className="inline-block h-5 w-5" />
                       </button>
                     </div>
                   </li>
@@ -201,15 +216,22 @@ export const TeacherDashboard = () => {
                 {activeTab === 'exams' && exams.map(exam => (
                   <li key={exam.id} className="py-4 flex items-center justify-between">
                     <div>
-                      <p className="text-lg font-medium text-gray-900">{exam.title}</p>
+                      <p className="text-sm font-medium text-gray-900">{exam.title}</p>
+                      <p className="text-sm text-gray-500">{exam.course}</p>
                       <p className="text-sm text-gray-500">Fecha: {exam.date}</p>
                     </div>
-                    <div className="flex space-x-4">
-                      <button onClick={() => handleEditItem(exam)} className="text-blue-600 hover:text-blue-800">
-                        <Edit className="h-5 w-5" />
+                    <div className="ml-4 flex-shrink-0">
+                      <button
+                        onClick={() => handleEditItem(exam)}
+                        className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 mr-2"
+                      >
+                        <Edit className="inline-block h-5 w-5" />
                       </button>
-                      <button onClick={() => handleDeleteItem(exam.id, 'exam')} className="text-red-600 hover:text-red-800">
-                        <Trash2 className="h-5 w-5" />
+                      <button
+                        onClick={() => handleDeleteItem(exam.id, 'exam')}
+                        className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                      >
+                        <Trash2 className="inline-block h-5 w-5" />
                       </button>
                     </div>
                   </li>
@@ -218,95 +240,148 @@ export const TeacherDashboard = () => {
             </div>
           </div>
 
-          {/* Form Modal for Editing/Adding Items */}
           {editingItem && (
-            <div className="fixed inset-0 flex items-center justify-center z-50">
-              <div className="bg-white p-6 rounded shadow-md">
-                <h3 className="text-lg font-medium">{editingItem.id ? 'Editar' : 'Nuevo'} {activeTab === 'courses' ? 'Curso' : activeTab === 'assignments' ? 'Tarea' : 'Examen'}</h3>
-                <form onSubmit={handleSaveItem}>
-                  {activeTab === 'courses' && (
-                    <>
-                      <label className="block mt-4">
-                        <span className="text-gray-700">Nombre del Curso</span>
-                        <input type="text" name="name" defaultValue={editingItem.name || ''} required className="mt-1 block w-full border-gray-300 rounded-md" />
-                      </label>
-                      <label className="block mt-4">
-                        <span className="text-gray-700">Horario</span>
-                        <input type="text" name="schedule" defaultValue={editingItem.schedule || ''} required className="mt-1 block w-full border-gray-300 rounded-md" />
-                      </label>
-                      <label className="block mt-4">
-                        <span className="text-gray-700">Número de Estudiantes</span>
-                        <input type="number" name="students" defaultValue={editingItem.students || ''} required className="mt-1 block w-full border-gray-300 rounded-md" />
-                      </label>
-                    </>
-                  )}
-                  {activeTab === 'assignments' && (
-                    <>
-                      <label className="block mt-4">
-                        <span className="text-gray-700">Título de la Tarea</span>
-                        <input type="text" name="title" defaultValue={editingItem.title || ''} required className="mt-1 block w-full border-gray-300 rounded-md" />
-                      </label>
-                      <label className="block mt-4">
-                        <span className="text-gray-700">Curso</span>
-                        <input type="text" name="course" defaultValue={editingItem.course || ''} required className="mt-1 block w-full border-gray-300 rounded-md" />
-                      </label>
-                      <label className="block mt-4">
-                        <span className="text-gray-700">Fecha de Entrega</span>
-                        <input type="date" name="dueDate" defaultValue={editingItem.dueDate || ''} required className="mt-1 block w-full border-gray-300 rounded-md" />
-                      </label>
-                    </>
-                  )}
-                  {activeTab === 'exams' && (
-                    <>
-                      <label className="block mt-4">
-                        <span className="text-gray-700">Título del Examen</span>
-                        <input type="text" name="title" defaultValue={editingItem.title || ''} required className="mt-1 block w-full border-gray-300 rounded-md" />
-                      </label>
-                      <label className="block mt-4">
-                        <span className="text-gray-700">Curso</span>
-                        <input type="text" name="course" defaultValue={editingItem.course || ''} required className="mt-1 block w-full border-gray-300 rounded-md" />
-                      </label>
-                      <label className="block mt-4">
-                        <span className="text-gray-700">Fecha del Examen</span>
-                        <input type="date" name="date" defaultValue={editingItem.date || ''} required className="mt-1 block w-full border-gray-300 rounded-md" />
-                      </label>
-                    </>
-                  )}
-                  <div className="flex justify-end mt-4">
-                    <button type="button" onClick={() => setEditingItem(null)} className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-200">Cancelar</button>
-                    <button type="submit" className="ml-2 px-4 py-2 border border-transparent rounded-md text-white bg-blue-600 hover:bg-blue-700">Guardar</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
-
-          {/* Upload Materials for Course */}
-          {activeTab === 'courses' && (
             <div className="mt-6">
-              <h2 className="text-lg font-medium text-gray-900">Materiales de Estudio</h2>
-              <ul className="divide-y divide-gray-200">
-                {courses.map(course => (
-                  <li key={course.id} className="py-4 flex items-center justify-between">
+              <h2 className="text-lg font-medium text-gray-900">
+                {activeTab === 'courses' ? 'Editar Curso' : activeTab === 'assignments' ? 'Editar Tarea' : 'Editar Examen'}
+              </h2>
+              <form onSubmit={handleSaveItem} className="space-y-4 mt-4">
+                {activeTab === 'courses' && (
+                  <>
                     <div>
-                      <p className="text-lg font-medium text-gray-900">{course.name}</p>
+                      <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nombre del curso</label>
                       <input
                         type="text"
-                        value={newMaterial}
-                        onChange={(e) => setNewMaterial(e.target.value)}
-                        placeholder="Nuevo material"
-                        className="mt-1 block w-full border-gray-300 rounded-md"
+                        name="name"
+                        id="name"
+                        value={editingItem.name || ''}
+                        onChange={(e) => setEditingItem({ ...editingItem, name: e.target.value })}
+                        required
+                        className="mt-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                       />
-                      <button
-                        onClick={() => handleAddMaterial(course.id)}
-                        className="mt-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
-                      >
-                        Añadir Material
-                      </button>
                     </div>
-                  </li>
-                ))}
-              </ul>
+                    <div>
+                      <label htmlFor="schedule" className="block text-sm font-medium text-gray-700">Horario</label>
+                      <input
+                        type="text"
+                        name="schedule"
+                        id="schedule"
+                        value={editingItem.schedule || ''}
+                        onChange={(e) => setEditingItem({ ...editingItem, schedule: e.target.value })}
+                        required
+                        className="mt-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="students" className="block text-sm font-medium text-gray-700">Número de estudiantes</label>
+                      <input
+                        type="number"
+                        name="students"
+                        id="students"
+                        value={editingItem.students || ''}
+                        onChange={(e) => setEditingItem({ ...editingItem, students: parseInt(e.target.value, 10) })}
+                        required
+                        className="mt-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      />
+                    </div>
+                  </>
+                )}
+                {activeTab === 'assignments' && (
+                  <>
+                    <div>
+                      <label htmlFor="title" className="block text-sm font-medium text-gray-700">Título de la tarea</label>
+                      <input
+                        type="text"
+                        name="title"
+                        id="title"
+                        value={editingItem.title || ''}
+                        onChange={(e) => setEditingItem({ ...editingItem, title: e.target.value })}
+                        required
+                        className="mt-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="course" className="block text-sm font-medium text-gray-700">Curso</label>
+                      <input
+                        type="text"
+                        name="course"
+                        id="course"
+                        value={editingItem.course || ''}
+                        onChange={(e) => setEditingItem({ ...editingItem, course: e.target.value })}
+                        required
+                        className="mt-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="dueDate" className="block text-sm font-medium text-gray-700">Fecha de entrega</label>
+                      <input
+                        type="date"
+                        name="dueDate"
+                        id="dueDate"
+                        value={editingItem.dueDate || ''}
+                        onChange={(e) => setEditingItem({ ...editingItem, dueDate: e.target.value })}
+                        required
+                        className="mt-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      />
+                    </div>
+                  </>
+                )}
+                {activeTab === 'exams' && (
+                  <>
+                    <div>
+                      <label htmlFor="title" className="block text-sm font-medium text-gray-700">Título del examen</label>
+                      <input
+                        type="text"
+                        name="title"
+                        id="title"
+                        value={editingItem.title || ''}
+                        onChange={(e) => setEditingItem({ ...editingItem, title: e.target.value })}
+                        required
+                        className="mt-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="course" className="block text-sm font-medium text-gray-700">Curso</label>
+                      <input
+                        type="text"
+                        name="course"
+                        id="course"
+                        value={editingItem.course || ''}
+                        onChange={(e) => setEditingItem({ ...editingItem, course: e.target.value })}
+                        required
+                        className="mt-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="date" className="block text-sm font-medium text-gray-700">Fecha</label>
+                      <input
+                        type="date"
+                        name="date"
+                        id="date"
+                        value={editingItem.date || ''}
+                        onChange={(e) => setEditingItem({ ...editingItem, date: e.target.value })}
+                        required
+                        className="mt-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      />
+                    </div>
+                  </>
+                )}
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    className="ml-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    Guardar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditingItem(null)}
+                    className="ml-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </form>
             </div>
           )}
         </div>
@@ -314,6 +389,4 @@ export const TeacherDashboard = () => {
     </div>
   );
 };
-
-
 
