@@ -17,6 +17,9 @@ export const AdminDashboard = () => {
     { id: 3, user: "Carlos Rodríguez", action: "Edición de usuario", timestamp: "2023-05-15 11:15" },
   ])
   const [editingUser, setEditingUser] = useState(null)
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [role, setRole] = useState('')
 
   const filteredUsers = users.filter(user => 
     user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -25,6 +28,9 @@ export const AdminDashboard = () => {
 
   const handleEditUser = (user) => {
     setEditingUser(user)
+    setName(user.name)
+    setEmail(user.email)
+    setRole(user.role)
   }
 
   const handleDeleteUser = (userId) => {
@@ -39,8 +45,17 @@ export const AdminDashboard = () => {
 
   const handleSaveUser = (e) => {
     e.preventDefault()
+    
+    // Validación básica
+    if (!name || !email) {
+      alert("Por favor, completa todos los campos.")
+      return
+    }
+
     if (editingUser) {
-      setUsers(users.map(user => user.id === editingUser.id ? editingUser : user))
+      // Edit existing user
+      const updatedUser = { ...editingUser, name, email, role }
+      setUsers(users.map(user => user.id === editingUser.id ? updatedUser : user))
       setActivityLog([...activityLog, {
         id: activityLog.length + 1,
         user: "Administrador",
@@ -48,12 +63,16 @@ export const AdminDashboard = () => {
         timestamp: new Date().toLocaleString()
       }])
       setEditingUser(null)
+      setName('')
+      setEmail('')
+      setRole('')
     } else {
+      // Add new user
       const newUser = {
-        id: users.length + 1,
-        name: e.currentTarget.name.value,
-        email: e.currentTarget.email.value,
-        role: e.currentTarget.role.value,
+        id: users.length > 0 ? Math.max(...users.map(user => user.id)) + 1 : 1, // ID único
+        name,
+        email,
+        role,
         lastActive: "N/A"
       }
       setUsers([...users, newUser])
@@ -63,6 +82,11 @@ export const AdminDashboard = () => {
         action: `Creación de usuario (ID: ${newUser.id})`,
         timestamp: new Date().toLocaleString()
       }])
+      // Reset the form
+      setName('')
+      setEmail('')
+      setRole('')
+      setEditingUser(null) // Asegúrate de limpiar el estado de editingUser
     }
   }
 
@@ -70,7 +94,7 @@ export const AdminDashboard = () => {
     <div className="flex h-screen bg-gray-100">
       <aside className="w-64 bg-white shadow-md">
         <div className="p-4">
-          <Link href="/" className="flex items-center space-x-2">
+          <Link to="/" className="flex items-center space-x-2">
             <BookOpen className="h-8 w-8 text-blue-600" />
             <span className="text-xl font-bold text-gray-800">PlanAcadémico</span>
           </Link>
@@ -134,160 +158,123 @@ export const AdminDashboard = () => {
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
-                  <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
                 </div>
                 <button
-                  onClick={() => setEditingUser({ id: 0, name: '', email: '', role: 'estudiante', lastActive: '' })}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  onClick={() => setEditingUser(null)}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 >
-                  <Plus className="inline-block mr-2 h-5 w-5" />
-                  Nuevo Usuario
+                  <Plus className="mr-2 h-4 w-4" />
+                  Agregar Usuario
                 </button>
               </div>
 
-              <div className="bg-white shadow overflow-hidden sm:rounded-md">
-                <ul className="divide-y divide-gray-200">
+              <form onSubmit={handleSaveUser} className="mb-4 p-4 bg-white rounded shadow-md">
+                <h2 className="text-lg font-semibold mb-4">{editingUser ? 'Editar Usuario' : 'Agregar Usuario'}</h2>
+                <div className="flex flex-col mb-4">
+                  <label htmlFor="name" className="mb-1 font-medium">Nombre:</label>
+                  <input
+                    type="text"
+                    name="name"
+                    className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                    value={name} // Manejando el valor desde el estado
+                    onChange={(e) => setName(e.target.value)} // Actualizando el estado
+                  />
+                </div>
+                <div className="flex flex-col mb-4">
+                  <label htmlFor="email" className="mb-1 font-medium">Email:</label>
+                  <input
+                    type="email"
+                    name="email"
+                    className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                    value={email} // Manejando el valor desde el estado
+                    onChange={(e) => setEmail(e.target.value)} // Actualizando el estado
+                  />
+                </div>
+                <div className="flex flex-col mb-4">
+                  <label htmlFor="role" className="mb-1 font-medium">Rol:</label>
+                  <select
+                    name="role"
+                    className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                    value={role} // Manejando el valor desde el estado
+                    onChange={(e) => setRole(e.target.value)} // Actualizando el estado
+                  >
+                    <option value="">Seleccionar rol</option>
+                    <option value="estudiante">Estudiante</option>
+                    <option value="profesor">Profesor</option>
+                    <option value="administrador">Administrador</option>
+                  </select>
+                </div>
+                <button
+                  type="submit"
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                >
+                  {editingUser ? 'Actualizar Usuario' : 'Agregar Usuario'}
+                </button>
+              </form>
+
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Última Actividad</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
                   {filteredUsers.map(user => (
-                    <li key={user.id}>
-                      <div className="px-4 py-4 flex items-center sm:px-6">
-                        <div className="min-w-0 flex-1 sm:flex sm:items-center sm:justify-between">
-                          <div>
-                            <h3 className="text-lg font-medium text-blue-600 truncate">{user.name}</h3>
-                            <p className="mt-1 text-sm text-gray-500">{user.email}</p>
-                          </div>
-                          <div className="mt-4 flex-shrink-0 sm:mt-0 sm:ml-5">
-                            <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                              {user.role}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="ml-5 flex-shrink-0">
-                          <button
-                            onClick={() => handleEditUser(user)}
-                            className="mr-2 text-blue-600 hover:text-blue-900"
-                          >
-                            <Edit className="h-5 w-5" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteUser(user.id)}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            <Trash2 className="h-5 w-5" />
-                          </button>
-                        </div>
-                      </div>
-                    </li>
+                    <tr key={user.id}>
+                      <td className="px-6 py-4 whitespace-nowrap">{user.name}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">{user.role}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">{user.lastActive}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <button onClick={() => handleEditUser(user)} className="text-blue-600 hover:text-blue-900">
+                          <Edit className="h-4 w-4 inline" />
+                        </button>
+                        <button onClick={() => handleDeleteUser(user.id)} className="text-red-600 hover:text-red-900 ml-2">
+                          <Trash2 className="h-4 w-4 inline" />
+                        </button>
+                      </td>
+                    </tr>
                   ))}
-                </ul>
-              </div>
+                </tbody>
+              </table>
             </div>
           )}
 
           {activeTab === 'activity' && (
-            <div className="bg-white shadow overflow-hidden sm:rounded-md">
-              <ul className="divide-y divide-gray-200">
-                {activityLog.map(activity => (
-                  <li key={activity.id}>
-                    <div className="px-4 py-4 sm:px-6">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium text-blue-600 truncate">{activity.user}</p>
-                        <div className="ml-2 flex-shrink-0 flex">
-                          <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                            {activity.action}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="mt-2 sm:flex sm:justify-between">
-                        <div className="sm:flex">
-                          <p className="flex items-center text-sm text-gray-500">
-                            <Activity className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" />
-                            {activity.action}
-                          </p>
-                        </div>
-                        <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                          <p>{activity.timestamp}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+            <div>
+              <h2 className="text-lg font-semibold mb-4">Registro de Actividad</h2>
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuario</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acción</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {activityLog.map(activity => (
+                    <tr key={activity.id}>
+                      <td className="px-6 py-4 whitespace-nowrap">{activity.user}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">{activity.action}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">{activity.timestamp}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
       </main>
-
-      {editingUser && (
-        <div className="fixed z-10 inset-0 overflow-y-auto">
-          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
-            </div>
-            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-              <form onSubmit={handleSaveUser}>
-                <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">
-                    {editingUser.id === 0 ? 'Crear Nuevo Usuario' : 'Editar Usuario'}
-                  </h3>
-                  <div className="mb-4">
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nombre</label>
-                    <input
-                      type="text"
-                      name="name"
-                      id="name"
-                      value={editingUser.name}
-                      onChange={(e) => setEditingUser({...editingUser, name: e.target.value})}
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-                    <input
-                      type="email"
-                      name="email"
-                      id="email"
-                      value={editingUser.email}
-                      onChange={(e) => setEditingUser({...editingUser, email: e.target.value})}
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label htmlFor="role" className="block text-sm font-medium  text-gray-700">Rol</label>
-                    <select
-                      name="role"
-                      id="role"
-                      value={editingUser.role}
-                      onChange={(e) => setEditingUser({...editingUser, role: e.target.value})}
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="estudiante">Estudiante</option>
-                      <option value="profesor">Profesor</option>
-                      <option value="administrador">Administrador</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                  <button
-                    type="submit"
-                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
-                  >
-                    Guardar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setEditingUser(null)}
-                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                  >
-                    Cancelar
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
+
 
