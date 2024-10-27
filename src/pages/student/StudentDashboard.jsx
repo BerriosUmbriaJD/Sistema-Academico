@@ -8,6 +8,15 @@ import { Calendar } from '../../components/Calendar';
 export const StudentDashboard = () => {
   const [date, setDate] = useState(new Date());
   const [activeTab, setActiveTab] = useState('calendar');
+  const [activities, setActivities] = useState([]);
+  const [newActivity, setNewActivity] = useState(''); 
+
+  const handleAddActivity = (e) => {
+    e.preventDefault();
+    if (newActivity.trim() === '') return; 
+    setActivities((prev) => [...prev, { date: date.toDateString(), activity: newActivity }]);
+    setNewActivity(''); 
+  };
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -46,7 +55,7 @@ export const StudentDashboard = () => {
 
         <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
           <h2 className="text-2xl font-semibold text-gray-900 mb-6">Bienvenido, Juan</h2>
-          
+
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
             <StatCard title="Clases Hoy" value="4" />
             <StatCard title="Tareas Pendientes" value="7" />
@@ -91,7 +100,29 @@ export const StudentDashboard = () => {
                 <div className="bg-white shadow overflow-hidden sm:rounded-lg">
                   <div className="px-4 py-5 sm:p-6">
                     <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Lista de Clases y Actividades</h3>
-                    <p>Añade alguna actividad.</p>
+                    <form onSubmit={handleAddActivity} className="mb-4">
+                      <input
+                        type="text"
+                        placeholder="Añade una actividad..."
+                        value={newActivity}
+                        onChange={(e) => setNewActivity(e.target.value)}
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2"
+                        required
+                      />
+                      <button
+                        type="submit"
+                        className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        Añadir Actividad
+                      </button>
+                    </form>
+                    <ul>
+                      {activities.map((activity, index) => (
+                        <li key={index} className="py-1 text-gray-800">
+                          {activity.date}: {activity.activity}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
               )}
@@ -102,9 +133,5 @@ export const StudentDashboard = () => {
     </div>
   );
 };
-
-
-
-
 
 
