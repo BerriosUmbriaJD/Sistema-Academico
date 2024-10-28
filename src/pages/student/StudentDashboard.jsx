@@ -1,60 +1,39 @@
-import { useState } from 'react';
-import { BookOpen, Home, Calendar as CalendarIcon, Mail, FileText, Bell, User } from 'lucide-react';
-import { NavItem } from '../../components/NavItem';
-import { StatCard } from '../../components/StatCard';
-import { Link } from 'react-router-dom';
-import { Calendar } from '../../components/Calendar';
+import { useState } from "react";
+import { StatCard } from "../../components/StatCard";
+import { Calendar } from "../../components/Calendar";
+import { DashboardHeader } from "../../components/DashboardHeader";
+import { Sidebar } from "../../components/Sidebar";
+import { ActivityForm } from "../../components/ActivityForm";
+import { ActivityList } from "../../components/ActivityList";
+import { TabButton } from "../../components/TabButton";
 
 export const StudentDashboard = () => {
   const [date, setDate] = useState(new Date());
-  const [activeTab, setActiveTab] = useState('calendar');
+  const [activeTab, setActiveTab] = useState("calendar");
   const [activities, setActivities] = useState([]);
-  const [newActivity, setNewActivity] = useState(''); 
+  const [newActivity, setNewActivity] = useState("");
 
   const handleAddActivity = (e) => {
     e.preventDefault();
-    if (newActivity.trim() === '') return; 
-    setActivities((prev) => [...prev, { date: date.toDateString(), activity: newActivity }]);
-    setNewActivity(''); 
+    if (newActivity.trim() === "") return;
+    setActivities((prev) => [
+      ...prev,
+      { date: date.toDateString(), activity: newActivity },
+    ]);
+    setNewActivity("");
   };
 
   return (
     <div className="flex h-screen bg-gray-100">
-      <aside className="w-64 bg-white shadow-md">
-        <div className="p-4">
-          <Link to="/" className="flex items-center space-x-2">
-            <BookOpen className="h-8 w-8 text-blue-600" />
-            <span className="text-xl font-bold text-gray-800">PlanAcadémico</span>
-          </Link>
-        </div>
-        <nav className="mt-8">
-          <NavItem icon={<Home className="mr-3 h-5 w-5" />} label="Inicio" active />
-          <NavItem icon={<CalendarIcon className="mr-3 h-5 w-5" />} label="Horario" />
-          <NavItem icon={<FileText className="mr-3 h-5 w-5" />} label="Tareas" />
-          <Link to="/student/messages">
-            <NavItem icon={<Mail className="mr-3 h-5 w-5" />} label="Mensajes" />
-          </Link>
-          <NavItem icon={<BookOpen className="mr-3 h-5 w-5" />} label="Materiales del Curso" />
-        </nav>
-      </aside>
+      <Sidebar />
 
       <main className="flex-1 overflow-y-auto">
-        <header className="bg-white shadow">
-          <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-            <div className="flex items-center space-x-4">
-              <button className="p-2 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <Bell className="h-5 w-5 text-gray-600" />
-              </button>
-              <button className="p-2 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <User className="h-5 w-5 text-gray-600" />
-              </button>
-            </div>
-          </div>
-        </header>
+        <DashboardHeader title="Panel del estudiante" />
 
         <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-6">Bienvenido, Juan</h2>
+          <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+            Bienvenido
+          </h2>
 
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
             <StatCard title="Clases Hoy" value="4" />
@@ -66,66 +45,41 @@ export const StudentDashboard = () => {
           <div className="mb-8">
             <div className="border-b border-gray-200">
               <nav className="-mb-px flex" aria-label="Tabs">
-                <button
-                  onClick={() => setActiveTab('calendar')}
-                  className={`w-1/2 py-4 px-1 text-center border-b-2 font-medium text-sm ${
-                    activeTab === 'calendar'
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  Calendario
-                </button>
-                <button
-                  onClick={() => setActiveTab('list')}
-                  className={`w-1/2 py-4 px-1 text-center border-b-2 font-medium text-sm ${
-                    activeTab === 'list'
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  Lista
-                </button>
+                <TabButton
+                  title="Calendario"
+                  isActive={activeTab === "calendar"}
+                  onClick={() => setActiveTab("calendar")}
+                />
+                <TabButton
+                  title="Lista"
+                  isActive={activeTab === "list"}
+                  onClick={() => setActiveTab("list")}
+                />
               </nav>
             </div>
+
             <div className="mt-4">
-              {activeTab === 'calendar' ? (
-                <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                  <div className="px-4 py-5 sm:p-6">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Horario Semanal</h3>
+              <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+                <div className="px-4 py-5 sm:p-6">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+                    {activeTab === "calendar"
+                      ? "Horario Semanal"
+                      : "Lista de Clases y Actividades"}
+                  </h3>
+                  {activeTab === "calendar" ? (
                     <Calendar date={date} setDate={setDate} />
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                  <div className="px-4 py-5 sm:p-6">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Lista de Clases y Actividades</h3>
-                    <form onSubmit={handleAddActivity} className="mb-4">
-                      <input
-                        type="text"
-                        placeholder="Añade una actividad..."
-                        value={newActivity}
-                        onChange={(e) => setNewActivity(e.target.value)}
-                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2"
-                        required
+                  ) : (
+                    <>
+                      <ActivityForm
+                        newActivity={newActivity}
+                        setNewActivity={setNewActivity}
+                        handleAddActivity={handleAddActivity}
                       />
-                      <button
-                        type="submit"
-                        className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                      >
-                        Añadir Actividad
-                      </button>
-                    </form>
-                    <ul>
-                      {activities.map((activity, index) => (
-                        <li key={index} className="py-1 text-gray-800">
-                          {activity.date}: {activity.activity}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                      <ActivityList activities={activities} />
+                    </>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </div>
@@ -133,5 +87,3 @@ export const StudentDashboard = () => {
     </div>
   );
 };
-
-
